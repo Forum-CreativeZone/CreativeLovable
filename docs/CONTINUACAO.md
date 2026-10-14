@@ -15,7 +15,8 @@ Este arquivo existe para quem for continuar o trabalho (outra pessoa, outra cont
 **Commits na `main`:**
 
 - `3727e56` Estúdio de design (em andamento): todos os motores.
-- Commit seguinte: testes novos (ainda não executados) e este relatório.
+- `77160aa` Testes novos e este relatório.
+- Commit seguinte: testes corrigidos (**132 ok, 0 falhas** com navegador), versão 2.0.0 em `src/config.js` e variáveis novas no `--ajuda`.
 
 ---
 
@@ -84,9 +85,9 @@ Todo POST exige o cabeçalho `X-Creative: 1` (como as outras rotas).
 
 ## 3. O que falta (em ordem de prioridade)
 
-### 3.1 Rodar e corrigir os testes (urgente: o CI está vermelho)
+### 3.1 Testes (feito localmente; conferir no CI)
 
-- `test/e2e.mjs` já foi atualizado (33 ferramentas, modo livre nos testes antigos) e ganhou as seções **"# Estúdio: …"** cobrindo o fluxo inteiro, mas **ainda não foi executado**. Rode, corrija o que falhar e suba.
+- `test/e2e.mjs` cobre o fluxo inteiro do estúdio (seções **"# Estúdio: …"**) e passa localmente: **132 ok, 0 falhas**. Confira se o GitHub Actions também ficou verde (Windows e macOS podem revelar diferenças de caminho ou de navegador).
 - Para os testes com navegador funcionarem localmente: `CL_CHROME=/caminho/do/chrome npm test`. Sem navegador, a auditoria cai para "só código" e o teste se adapta (verifica `navegadorReal`).
 - Atenção ao tempo: `cl_auditar` com navegador leva alguns segundos; o teste usa `chamarLongo` (timeout de 240 s).
 - O workflow `.github/workflows/testes.yml` usa Node 20 e 22. O mínimo agora é **Node 20.19** (por causa do `parse5`/`entities`). Avaliar trocar a matriz para `[20, 22, 24]`.
@@ -108,7 +109,6 @@ O painel atual tem as abas Atividade, Erros, Arquivos e Versões. Falta uma aba 
 
 ### 3.3 Detalhes de código
 
-- `src/config.js`: `VERSAO` ainda é `'1.0.0'`; trocar para `'2.0.0'` (o `package.json` já está em 2.0.0). Atualizar o texto `AJUDA` com `CL_MODO_PADRAO`, `CL_APROVACAO` e `CL_SEM_IMPECCABLE`.
 - Projetos novos no modo estúdio ainda nascem com o `index.html` genérico do modelo. Ideia: no modo estúdio, criar um `index.html` de "canteiro" que mostre que o projeto está nas etapas iniciais.
 - Modelo `jogo` no modo estúdio: algumas regras de auditoria (landmarks, h1, ação abaixo da dobra) podem pesar demais em jogos de canvas. Avaliar um perfil de auditoria por tipo de briefing.
 - Projetos React: a auditoria no navegador só roda com o servidor de desenvolvimento ligado (`cl_iniciar_servidor`); a análise estática de JSX é mais simples que a de HTML.

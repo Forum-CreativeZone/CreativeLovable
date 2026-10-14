@@ -229,7 +229,7 @@ async function principal() {
   await chamar(c, 'cl_escrever', { projeto: 'app-react', caminho: 'src/main.jsx', conteudo: "import App from './Inexistente.jsx';\nconst x = <div>oi</div>;\n" });
   r = await chamar(c, 'cl_verificar', { projeto: 'app-react' });
   checar(/Inexistente.jsx/.test(txt(r)), 'import local inexistente é apontado', txt(r));
-  r = await chamar(c, 'cl_criar_projeto', { nome: 'Coletor', modelo: 'jogo' });
+  r = await chamar(c, 'cl_criar_projeto', { nome: 'Coletor', modelo: 'jogo', modo: 'livre' });
   r = await chamar(c, 'cl_verificar', { projeto: 'coletor' });
   checar(/Nenhum problema/.test(txt(r)), 'modelo jogo passa na verificação', txt(r));
 

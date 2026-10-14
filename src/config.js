@@ -1,7 +1,7 @@
 import os from 'node:os';
 import path from 'node:path';
 
-export const VERSAO = '1.0.0';
+export const VERSAO = '2.0.0';
 
 export const COMANDOS_PADRAO = ['npm', 'npx', 'node', 'pnpm', 'yarn', 'bun', 'deno', 'git', 'python', 'python3', 'pip', 'pip3'];
 
@@ -57,4 +57,9 @@ Opções:
   --sem-painel              Não abre o painel local (só no modo stdio)      [CL_SEM_PAINEL=1]
 
 Comandos permitidos para a IA: CL_COMANDOS=npm,node,git  (ou CL_SEM_COMANDOS=1)
+
+Estúdio de design:
+  CL_MODO_PADRAO=livre      Projetos novos sem as etapas do estúdio (padrão: estúdio para html, web, react e jogo)
+  CL_APROVACAO=painel       Aprovações só no painel (outros: painel-ou-conversa, automatica)
+  CL_SEM_IMPECCABLE=1       Não roda o detector opcional do Impeccable na auditoria
 `;

@@ -46,6 +46,11 @@ const PT_EN = [
   [/governo|prefeitura|p[uú]blic|cidad[aã]/, 'government public service civic'], [/doa[cç][aã]o|vaquinha|financiamento coletivo/, 'crowdfunding'],
   [/ingress|bilhet/, 'ticketing box office'], [/assinatura|clube de/, 'subscription membership'], [/f[oó]rum|comunidade/, 'forum community membership'],
   [/documenta[cç]|manual|wiki|ajuda/, 'knowledge base documentation wiki'], [/link na bio|linktree/, 'link-in-bio'], [/tatua/, 'tattoo studio beauty'],
+  // termos de interface
+  [/formul[aá]ri|campo|cadastr|valida[cç]/, 'forms data entry input validation'], [/navega[cç]|menu|rodap[eé]|cabe[cç]alho/, 'navigation'],
+  [/acessib/, 'accessibility'], [/carregament|espera|lentid/, 'loading feedback performance'], [/anima[cç]|movimento|transi[cç]/, 'animation motion'],
+  [/busca|pesquisa|filtro/, 'search'], [/toque|celular|mobile|responsiv/, 'touch responsive mobile'], [/tipograf|fonte|letra/, 'typography'],
+  [/erro|vazio|estado/, 'feedback state'], [/primeiro acesso|boas-vindas|onboarding/, 'onboarding'], [/tabela|lista|dados/, 'data table content'],
   // tom e estilo
   [/calor|acolhe|afetu|aconcheg/, 'warm friendly approachable'], [/artesan|feito [àa] m[aã]o|manual|of[ií]cio/, 'handmade artisan craft organic natural'],
   [/diret|objetiv|claro\b|sem rodeio/, 'clear bold direct functional'], [/eleg|sofistic|refin|chique/, 'elegant sophisticated refined'],
