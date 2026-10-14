@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creative Lovable · painel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Bancada: projetos à esquerda, preview no centro, painel de acompanhamento à direita. */
+:root{
+  --bg:#F2F3F5; --surface:#FFFFFF; --surface-2:#F7F8FA; --sunken:#E6E8EC;
+  --fg:#14161B; --muted:#565D6B; --faint:#858B97; --line:#DEE1E6; --line-strong:#C7CCD4;
+  --accent:#C4441C; --accent-hover:#AE3A15; --accent-ink:#FFFFFF; --accent-soft:#FBE7DE; --glow:#EE8A3A;
+  --ok:#147A55; --ok-soft:#E0F2E9; --danger:#BE2F2F; --danger-soft:#FBE5E5; --warn:#9A6400; --warn-soft:#FBF1DC;
+  --canvas:#FFFFFF; --bezel:#16181D;
+  --shadow-sm:0 1px 2px rgb(16 18 24 / .06); --shadow:0 1px 2px rgb(16 18 24 / .05), 0 12px 32px rgb(16 18 24 / .08);
+  --font-display:"Bricolage Grotesque","Figtree",system-ui,sans-serif;
+  --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r-sm:8px; --r-md:12px; --r-lg:16px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0C0E11; --surface:#14171C; --surface-2:#191D23; --sunken:#08090C;
+    --fg:#E8EAEE; --muted:#A3A9B4; --faint:#6F7682; --line:#242931; --line-strong:#333944;
+    --accent:#FF6A3D; --accent-hover:#FF845C; --accent-ink:#1C0D06; --accent-soft:#3A1C11; --glow:#FFB25E;
+    --ok:#3CCB8A; --ok-soft:#0F2A1F; --danger:#FF7070; --danger-soft:#351719; --warn:#F2C14E; --warn-soft:#2E2510;
+    --canvas:#FFFFFF; --bezel:#2C313A;
+    --shadow-sm:0 1px 2px rgb(0 0 0 / .5); --shadow:0 1px 2px rgb(0 0 0 / .4), 0 14px 36px rgb(0 0 0 / .4);
+    color-scheme:dark;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:14.5px/1.5 var(--font-body);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.mono{font-family:var(--font-mono)}
+
+.app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr)}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:800;font-size:19px;letter-spacing:-.02em}
+.brand svg{width:26px;height:26px}
+.brand small{font-family:var(--font-body);font-weight:600;font-size:12px;color:var(--faint);letter-spacing:.04em;text-transform:uppercase}
+.spacer{flex:1}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);padding:4px 10px;border:1px solid var(--line);border-radius:999px}
+.status i{width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.status.on i{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.dir{font-family:var(--font-mono);font-size:12px;color:var(--faint);max-width:40ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.main{display:grid;grid-template-columns:250px minmax(0,1fr) 360px;min-height:0}
+.side{border-right:1px solid var(--line);display:grid;grid-template-rows:auto minmax(0,1fr);min-height:0;background:var(--surface-2)}
+.side-head{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 8px}
+.side-head h2,.panel h2{margin:0;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.plist{overflow:auto;padding:0 8px 16px;display:flex;flex-direction:column;gap:2px}
+.pitem{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center;padding:8px;border-radius:var(--r-sm);border:1px solid transparent;background:transparent;text-align:left;width:100%}
+.pitem:hover{background:var(--sunken)}
+.pitem[aria-current="true"]{background:var(--surface);border-color:var(--line);box-shadow:var(--shadow-sm)}
+.tile{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-family:var(--font-display);font-weight:800;font-size:13px;background:var(--accent-soft);color:var(--accent)}
+.pname{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pmeta{font-size:12px;color:var(--faint);display:flex;gap:6px;align-items:center;white-space:nowrap;overflow:hidden}
+.dot{width:6px;height:6px;border-radius:50%;flex:none}
+.dot-err{background:var(--danger)} .dot-run{background:var(--ok)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--sunken);color:var(--muted)}
+
+.center{display:grid;grid-template-rows:auto minmax(0,1fr);min-width:0;min-height:0}
+.toolbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap;min-width:0}
+.ptitle{font-family:var(--font-display);font-weight:800;font-size:18px;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:28ch}
+.url{display:flex;align-items:center;gap:4px;min-width:0;flex:1 1 180px;height:32px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);padding:0 4px 0 10px}
+.url span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 11px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:13px;white-space:nowrap;text-decoration:none;color:var(--fg)}
+.btn:hover{border-color:var(--line-strong);background:var(--surface-2)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn svg{width:15px;height:15px;flex:none}
+.btn.icon{width:32px;padding:0}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--sunken)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{background:var(--accent-hover)}
+.btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.btn.danger{color:var(--danger)}
+.btn.sm{height:26px;padding:0 8px;font-size:12px}
+.seg{display:inline-flex;padding:3px;border-radius:9px;background:var(--sunken);gap:2px}
+.seg button{height:26px;width:30px;border:0;background:transparent;border-radius:6px;color:var(--muted);display:grid;place-items:center}
+.seg button svg{width:15px;height:15px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow-sm)}
+
+.stage{position:relative;background:var(--sunken);overflow:auto;display:flex;min-height:0}
+.device{margin:0 auto;width:100%;height:100%;background:var(--canvas);flex:none;transition:width .2s ease}
+.stage[data-device="tablet"] .device{width:820px;max-width:calc(100% - 32px);height:calc(100% - 32px);margin:16px auto;border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.stage[data-device="phone"] .device{width:390px;max-width:calc(100% - 32px);height:min(820px,calc(100% - 32px));margin:16px auto;border-radius:34px;border:9px solid var(--bezel);overflow:hidden;box-shadow:var(--shadow)}
+.device iframe{display:block;width:100%;height:100%;border:0;background:var(--canvas)}
+.selbar{position:absolute;left:12px;right:12px;top:12px;z-index:3;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--r-sm);background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:13px;box-shadow:var(--shadow)}
+.selbar svg{width:15px;height:15px}
+
+.vazio{margin:auto;max-width:640px;padding:40px 24px;display:flex;flex-direction:column;gap:14px}
+.vazio h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.05;letter-spacing:-.03em;text-wrap:balance}
+.vazio h1 em{font-style:normal;color:var(--accent)}
+.vazio p{margin:0;color:var(--muted);max-width:60ch}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--muted)}
+.tabs button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+pre.code{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font:12.5px/1.6 var(--font-mono);overflow:auto;white-space:pre}
+.copyrow{display:flex;justify-content:flex-end}
+.ideias{display:grid;gap:8px}
+.ideia{border:1px dashed var(--line-strong);border-radius:var(--r-sm);padding:9px 12px;font-size:13.5px;color:var(--muted);background:transparent;text-align:left;display:flex;align-items:center;gap:10px}
+.ideia:hover{color:var(--fg);border-style:solid}
+.ideia svg{width:15px;height:15px;flex:none;color:var(--accent)}
+.stage-msg{margin:auto;max-width:420px;text-align:center;padding:24px;color:var(--muted);display:flex;flex-direction:column;gap:8px}
+.stage-msg h3{margin:0;font-family:var(--font-display);color:var(--fg);font-size:19px}
+
+.panel{border-left:1px solid var(--line);display:grid;grid-template-rows:auto minmax(0,1fr);min-height:0;background:var(--surface)}
+.ptabs{display:flex;gap:2px;padding:8px 8px 0;border-bottom:1px solid var(--line)}
+.ptabs button{border:0;background:transparent;padding:8px 10px;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;display:inline-flex;gap:6px;align-items:center}
+.ptabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+.badge{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;display:inline-grid;place-items:center}
+.pbody{overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.feed{display:flex;flex-direction:column;gap:2px}
+.fitem{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;padding:6px 4px;border-radius:6px;font-size:13px}
+.fitem time{font-family:var(--font-mono);font-size:11.5px;color:var(--faint);padding-top:1px;font-variant-numeric:tabular-nums}
+.fitem.novo{animation:pisca 1.2s ease-out}
+@keyframes pisca{from{background:var(--accent-soft)}to{background:transparent}}
+.err{border:1px solid var(--line);border-left:3px solid var(--danger);border-radius:var(--r-sm);padding:8px 10px;display:flex;flex-direction:column;gap:3px;background:var(--surface-2)}
+.err .msg{font-family:var(--font-mono);font-size:12.5px;overflow-wrap:anywhere}
+.err .onde{font-size:12px;color:var(--faint)}
+.err.recurso{border-left-color:var(--warn)}
+.logs{font:12px/1.55 var(--font-mono);background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:8px 10px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto}
+.logs .e{color:var(--danger)}
+.hint{font-size:12.5px;color:var(--faint)}
+.row{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap}
+.files{display:flex;flex-direction:column}
+.file{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 6px;border:0;background:transparent;border-radius:6px;text-align:left;font-family:var(--font-mono);font-size:12.5px;width:100%}
+.file:hover{background:var(--sunken)}
+.file span:last-child{color:var(--faint);font-size:11.5px;flex:none}
+.file .nome{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.viewer{display:flex;flex-direction:column;gap:8px;min-height:0}
+.viewer pre{margin:0;font:12px/1.6 var(--font-mono);background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);overflow:auto;max-height:65vh;counter-reset:l}
+.viewer code{display:block;padding:8px 0}
+.viewer .ln{display:block;padding:0 12px 0 0;white-space:pre}
+.viewer .ln::before{counter-increment:l;content:counter(l);display:inline-block;width:3.2em;padding-right:12px;text-align:right;color:var(--faint);user-select:none}
+.ver{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:var(--r-sm)}
+.ver .n{font-family:var(--font-mono);font-size:12px;padding:2px 7px;border-radius:6px;background:var(--accent-soft);color:var(--accent);flex:none}
+.ver .t{flex:1;min-width:0}
+.ver .t1{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ver .t2{font-size:11.5px;color:var(--faint);font-family:var(--font-mono)}
+.selcard{border:1px solid var(--accent);background:var(--accent-soft);border-radius:var(--r-md);padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.selcard b{color:var(--accent)}
+.toast{position:fixed;left:16px;bottom:16px;z-index:50;max-width:min(440px,calc(100vw - 32px));background:var(--fg);color:var(--bg);padding:10px 14px;border-radius:var(--r-md);box-shadow:var(--shadow);font-size:13.5px}
+
+@media (max-width: 1180px){
+  .main{grid-template-columns:230px minmax(0,1fr)}
+  .panel{grid-column:1 / -1;border-left:0;border-top:1px solid var(--line);max-height:42vh}
+  .main{grid-template-rows:minmax(0,1fr) auto}
+}
+@media (max-width: 760px){
+  .app{height:auto;min-height:100%}
+  .main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto}
+  .stage{height:72vh;min-height:360px}
+  .panel{max-height:none}
+  .side{border-right:0;border-bottom:1px solid var(--line);grid-template-rows:auto}
+  .plist{flex-direction:row;overflow-x:auto;padding-bottom:10px}
+  .pitem{width:auto;min-width:200px}
+  .dir{display:none}
+}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand" id="logo"></div>
+    <span class="dir" id="dir" title=""></span>
+    <span class="spacer"></span>
+    <span class="status" id="status"><i></i><span>conectando…</span></span>
+  </header>
+  <div class="main">
+    <aside class="side" aria-label="Projetos">
+      <div class="side-head"><h2>Projetos</h2><span class="chip" id="pcount">0</span></div>
+      <div class="plist" id="plist"></div>
+    </aside>
+
+    <section class="center" aria-label="Preview">
+      <div class="toolbar" id="toolbar" hidden>
+        <span class="ptitle" id="ptitle"></span>
+        <span class="chip" id="pmodelo"></span>
+        <div class="url"><span id="purl"></span><button class="btn ghost icon" id="copyUrl" title="Copiar endereço" aria-label="Copiar endereço" data-i="copy"></button></div>
+        <div class="seg" role="group" aria-label="Tamanho da tela" id="devices">
+          <button data-device="desktop" aria-pressed="true" title="Computador" aria-label="Computador" data-i="monitor"></button>
+          <button data-device="tablet" aria-pressed="false" title="Tablet" aria-label="Tablet" data-i="tablet"></button>
+          <button data-device="phone" aria-pressed="false" title="Celular" aria-label="Celular" data-i="phone"></button>
+        </div>
+        <button class="btn" id="selBtn" data-i="cursor" title="Escolha um elemento para a IA mudar">Editar visualmente</button>
+        <button class="btn icon" id="reload" title="Recarregar" aria-label="Recarregar" data-i="refresh"></button>
+        <a class="btn icon" id="abrir" target="_blank" rel="noopener" title="Abrir em nova aba" aria-label="Abrir em nova aba" data-i="external"></a>
+      </div>
+      <div class="stage" id="stage" data-device="desktop">
+        <div class="selbar" id="selbar" hidden><span data-i="cursor"></span>Clique no elemento que você quer mudar. Esc cancela.</div>
+        <div class="device" id="device" hidden><iframe id="frame" title="Preview do projeto"></iframe></div>
+        <div class="stage-msg" id="stageMsg" hidden></div>
+        <div class="vazio" id="vazio" hidden>
+          <h1>Conecte sua IA ao <em>Creative Lovable</em></h1>
+          <p>O Creative Lovable é o laboratório; a sua IA é quem constrói. Adicione o Creative Lovable como servidor MCP no app que você usa e peça o que quiser criar. Os projetos aparecem aqui e o preview atualiza sozinho.</p>
+          <div class="tabs" id="cfgTabs" role="group" aria-label="Aplicativo"></div>
+          <pre class="code" id="cfgCode"></pre>
+          <div class="copyrow"><button class="btn" id="cfgCopy" data-i="copy">Copiar</button></div>
+          <p class="hint" id="cfgHint"></p>
+          <h2 style="margin:10px 0 0;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)">Depois, peça algo assim</h2>
+          <div class="ideias" id="ideias"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Acompanhamento">
+      <div class="ptabs" role="tablist">
+        <button role="tab" data-aba="atividade" aria-selected="true">Atividade</button>
+        <button role="tab" data-aba="erros" aria-selected="false">Erros <span class="badge" id="errBadge" hidden>0</span></button>
+        <button role="tab" data-aba="arquivos" aria-selected="false">Arquivos</button>
+        <button role="tab" data-aba="versoes" aria-selected="false">Versões</button>
+      </div>
+      <div class="pbody" id="pbody"></div>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const kb = (n) => (n / 1024).toFixed(n < 10240 ? 1 : 0).replace('.', ',') + ' KB';
+const hora = (ts) => new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+function atras(ts) {
+  const d = (Date.now() - (typeof ts === 'string' ? Date.parse(ts) : ts)) / 1000;
+  if (d < 45) return 'agora';
+  if (d < 3600) return 'há ' + Math.round(d / 60) + ' min';
+  if (d < 86400) return 'há ' + Math.round(d / 3600) + ' h';
+  return new Date(typeof ts === 'string' ? Date.parse(ts) : ts).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+}
+const iniciais = (n) => { const w = String(n || 'P').trim().split(/\s+/); return ((w[0] || 'P')[0] + (w[1] ? w[1][0] : (w[0][1] || ''))).toUpperCase(); };
+
+const ICON = {
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/>',
+  monitor: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+  tablet: '<rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M11 18h2"/>',
+  phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/>',
+  cursor: '<path d="M5 3l6.5 17 2.4-7 7.1-2.5z"/>',
+  refresh: '<path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/>',
+  external: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  back: '<path d="M15 18l-6-6 6-6"/>',
+};
+const svg = (n) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICON[n] || '') + '</svg>';
+const LOGO = '<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" style="fill:var(--accent)"/><path d="M12.5 19h7.6l2.6 4.2a1.6 1.6 0 0 1-1.4 2.4H11.3a1.6 1.6 0 0 1-1.4-2.4z" style="fill:var(--glow)"/><path d="M13 6.5h6M14.2 6.5v6.3L8.9 22.6a2 2 0 0 0 1.8 3h10.6a2 2 0 0 0 1.8-3l-5.3-9.8V6.5" style="fill:none;stroke:var(--accent-ink)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="15" cy="21.6" r="1" style="fill:var(--accent-ink)"/><circle cx="18.2" cy="23.3" r=".8" style="fill:var(--accent-ink)"/></svg>';
+
+const S = { saude: {}, projetos: [], atual: null, dados: null, aba: 'atividade', device: 'desktop', atividade: [], selecionando: false, arquivoAberto: null, confirmar: null, cfg: 'claude-desktop' };
+
+let toastT = 0;
+function toast(m) { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3500); }
+async function api(rota, opcoes) {
+  const r = await fetch(rota, Object.assign({ headers: { 'Content-Type': 'application/json', 'X-Creative': '1' } }, opcoes || {}));
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.erro || 'Falha na requisição');
+  return j;
+}
+function copiar(texto) {
+  const falhou = () => toast('Não consegui copiar. Selecione o texto e use Ctrl+C.');
+  try { navigator.clipboard.writeText(texto).then(() => toast('Copiado.'), falhou); } catch (e) { falhou(); }
+}
+
+/* ---------- projetos ---------- */
+async function carregarProjetos() {
+  const j = await api('/api/projetos');
+  S.projetos = j.projetos;
+  $('#dir').textContent = j.dir; $('#dir').title = j.dir;
+  renderLista();
+  if (!S.atual && S.projetos.length && !location.hash) abrir(S.projetos[0].slug);
+  if (!S.projetos.length) renderVazio();
+}
+function renderLista() {
+  $('#pcount').textContent = S.projetos.length;
+  $('#plist').innerHTML = S.projetos.length ? S.projetos.map((p) =>
+    '<button class="pitem" data-slug="' + esc(p.slug) + '" aria-current="' + (p.slug === S.atual) + '">' +
+    '<span class="tile">' + esc(iniciais(p.nome)) + '</span><span style="min-width:0"><span class="pname" style="display:block">' + esc(p.nome) + '</span>' +
+    '<span class="pmeta">' + (p.erros ? '<span class="dot dot-err" title="Erros no preview"></span>' : '') + (p.servidor && p.servidor.ativo ? '<span class="dot dot-run" title="Servidor rodando"></span>' : '') +
+    esc(p.modelo) + ' · ' + esc(atras(p.atualizadoEm)) + '</span></span></button>').join('')
+    : '<p class="hint" style="padding:8px">Nenhum projeto ainda.</p>';
+}
+async function abrir(slug) {
+  S.atual = slug; S.arquivoAberto = null; S.confirmar = null; S.selecionando = false;
+  if (location.hash !== '#/' + slug) history.replaceState(null, '', '#/' + slug);
+  renderLista();
+  await carregarDetalhe(true);
+}
+async function carregarDetalhe(recarregarFrame) {
+  if (!S.atual) return;
+  try { S.dados = await api('/api/projetos/' + encodeURIComponent(S.atual)); }
+  catch (e) { S.dados = null; S.atual = null; toast('Projeto não encontrado.'); return carregarProjetos(); }
+  renderProjeto(recarregarFrame);
+  renderPainel();
+}
+function urlDoApp() {
+  const d = S.dados; if (!d) return null;
+  if (d.servidor && d.servidor.ativo && d.servidor.url) return d.servidor.url;
+  if (d.meta.modelo === 'react' || d.meta.modelo === 'api') return null;
+  return '/preview/' + encodeURIComponent(d.meta.slug) + '/';
+}
+function renderProjeto(recarregarFrame) {
+  const d = S.dados; if (!d) return;
+  $('#vazio').hidden = true;
+  $('#toolbar').hidden = false;
+  $('#ptitle').textContent = d.meta.nome;
+  $('#pmodelo').textContent = d.meta.modelo;
+  const u = urlDoApp();
+  const completo = u ? new URL(u, location.href).href : '';
+  $('#purl').textContent = completo || 'sem servidor rodando';
+  $('#abrir').href = completo || '#';
+  $('#abrir').toggleAttribute('aria-disabled', !u);
+  const frame = $('#frame');
+  const externo = !!(u && /^https?:/.test(u) && new URL(u).origin !== location.origin);
+  $('#selBtn').disabled = !u || externo;
+  $('#selBtn').title = externo ? 'A edição visual funciona nas páginas servidas pelo Creative Lovable (modelos html, web, jogo e vazio).' : 'Escolha um elemento para a IA mudar';
+  if (!u) {
+    $('#device').hidden = true;
+    const m = $('#stageMsg'); m.hidden = false;
+    m.innerHTML = '<h3>Este projeto roda com servidor</h3><p>Peça à sua IA: <b>“inicie o servidor do projeto ' + esc(d.meta.nome) + ' no Creative Lovable”</b>. Quando ele subir, o app aparece aqui.</p>';
+    frame.removeAttribute('src'); frame.dataset.src = '';
+  } else {
+    $('#stageMsg').hidden = true; $('#device').hidden = false;
+    if (recarregarFrame || frame.dataset.src !== u) { frame.dataset.src = u; frame.src = u; }
+  }
+  renderSel();
+}
+
+/* ---------- painel direito ---------- */
+function renderPainel() {
+  $$('.ptabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.aba === S.aba)));
+  const d = S.dados;
+  const nErros = d ? d.erros.reduce((s, e) => s + (e.vezes || 1), 0) : 0;
+  $('#errBadge').hidden = !nErros; $('#errBadge').textContent = nErros > 99 ? '99+' : nErros;
+  const b = $('#pbody');
+  if (S.aba === 'atividade') return renderAtividade(b);
+  if (!d) { b.innerHTML = '<p class="hint">Escolha um projeto.</p>'; return; }
+  if (S.aba === 'erros') return renderErros(b, d);
+  if (S.aba === 'arquivos') return renderArquivos(b, d);
+  if (S.aba === 'versoes') return renderVersoes(b, d);
+}
+function renderAtividade(b) {
+  const lista = S.atividade.filter((a) => !S.atual || a.projeto === S.atual || !a.projeto).slice(-80).reverse();
+  let html = '';
+  if (S.dados && S.dados.selecao) {
+    const s = S.dados.selecao;
+    html += '<div class="selcard"><span><b>Elemento selecionado</b> há ' + esc(atras(s.ts)) + '</span><span class="mono">&lt;' + esc(s.tag) + '&gt; ' + esc(s.texto.slice(0, 80)) + '</span>' +
+      '<span class="hint">Agora diga à sua IA: “No Creative Lovable, mude o elemento que selecionei: …”</span>' +
+      '<div><button class="btn sm" data-copiar="No Creative Lovable, no projeto ' + esc(S.dados.meta.nome) + ', mude o elemento que eu selecionei: ">Copiar frase</button></div></div>';
+  }
+  html += lista.length ? '<div class="feed">' + lista.map((a) => '<div class="fitem' + (a._novo ? ' novo' : '') + '"><time>' + esc(hora(a.ts)) + '</time><span>' + esc(a.texto) + '</span></div>').join('') + '</div>'
+    : '<p class="hint">O que a sua IA fizer no Creative Lovable aparece aqui em tempo real: arquivos criados, edições, verificações, versões e comandos.</p>';
+  b.innerHTML = html;
+  S.atividade.forEach((a) => { delete a._novo; });
+}
+function renderErros(b, d) {
+  let html = '<div class="row"><h2>Navegador</h2>' + (d.erros.length ? '<button class="btn sm" id="limparErros">Limpar</button>' : '') + '</div>';
+  html += d.erros.length ? d.erros.slice().reverse().map((e) => '<div class="err ' + esc(e.tipo) + '"><span class="msg">' + esc(e.mensagem) + '</span><span class="onde">' + esc(e.tipo) +
+    (e.arquivo ? ' · ' + esc(e.arquivo) + (e.linha ? ':' + e.linha : '') : '') + (e.pagina ? ' · página ' + esc(e.pagina) : '') + (e.vezes > 1 ? ' · ' + e.vezes + 'x' : '') + ' · ' + esc(atras(e.ts)) + '</span></div>').join('')
+    + '<p class="hint">Peça à sua IA: “veja os erros do projeto no Creative Lovable e corrija”.</p>'
+    : '<p class="hint">Nenhum erro no preview. Os erros de JavaScript, arquivos que não carregaram e console.error aparecem aqui assim que acontecem.</p>';
+  if (d.servidor && d.servidor.comando) {
+    html += '<div class="row" style="margin-top:6px"><h2>Servidor</h2><span class="chip">' + (d.servidor.ativo ? 'rodando' : 'parado') + '</span></div>';
+    html += '<div class="hint mono">' + esc(d.servidor.comando) + (d.servidor.url ? ' · ' + esc(d.servidor.url) : '') + '</div>';
+  }
+  if (d.logs && d.logs.length) html += '<div class="logs">' + d.logs.map((l) => '<span class="' + (l.fonte === 'stderr' ? 'e' : '') + '">' + esc(l.texto) + '</span>').join('\n') + '</div>';
+  b.innerHTML = html;
+}
+function renderArquivos(b, d) {
+  if (S.arquivoAberto) {
+    const a = S.arquivoAberto;
+    b.innerHTML = '<div class="viewer"><div class="row"><button class="btn sm" id="voltarArq">' + svg('back') + 'Arquivos</button><span class="hint mono">' + esc(a.rel) + ' · ' + (a.binario ? 'binário' : a.total + ' linhas') + '</span></div>' +
+      (a.binario ? '<p class="hint">Arquivo binário.</p>' : '<pre><code>' + a.texto.split('\n').map((l) => '<span class="ln">' + esc(l) + '</span>').join('') + '</code></pre>') + '</div>';
+    return;
+  }
+  const total = d.arquivos.reduce((s, a) => s + a.bytes, 0);
+  b.innerHTML = '<div class="row"><h2>' + d.arquivos.length + ' arquivos · ' + kb(total) + '</h2></div><div class="files">' +
+    d.arquivos.map((a) => { const prof = a.caminho.split('/').length - 1; return '<button class="file" data-arq="' + esc(a.caminho) + '" style="padding-left:' + (6 + prof * 14) + 'px"><span class="nome">' + esc(prof ? a.caminho.split('/').pop() : a.caminho) + '</span><span>' + kb(a.bytes) + '</span></button>'; }).join('') + '</div>' +
+    '<p class="hint">Pasta: <span class="mono">' + esc(S.saude.dir ? S.saude.dir + '/' + d.meta.slug : d.meta.slug) + '</span></p>';
+}
+function renderVersoes(b, d) {
+  if (!d.versoes.length) { b.innerHTML = '<p class="hint">Nenhuma versão salva ainda.</p>'; return; }
+  const ultima = d.versoes[d.versoes.length - 1].n;
+  b.innerHTML = d.versoes.slice().reverse().map((v) => {
+    const conf = S.confirmar === v.n;
+    return '<div class="ver"><span class="n">v' + v.n + '</span><span class="t"><span class="t1" style="display:block">' + esc(v.mensagem) + '</span><span class="t2">' + esc(atras(v.data)) + ' · ' + v.arquivos + ' arq. · ' + kb(v.bytes) + '</span></span>' +
+      (v.n === ultima ? '<span class="chip">atual</span>' : conf
+        ? '<span class="row" style="gap:4px"><button class="btn sm primary" data-restaurar="' + v.n + '">Restaurar</button><button class="btn sm ghost" data-cancelar>Cancelar</button></span>'
+        : '<button class="btn sm" data-confirmar="' + v.n + '">Restaurar</button>') + '</div>';
+  }).join('') + '<p class="hint">Restaurar guarda antes o estado atual como uma versão nova, então nada se perde.</p>';
+}
+
+/* ---------- seleção visual ---------- */
+function renderSel() {
+  $('#selBtn').classList.toggle('on', S.selecionando);
+  $('#selbar').hidden = !S.selecionando;
+}
+function ligarSelecao(v) {
+  S.selecionando = v; renderSel();
+  try { $('#frame').contentWindow.postMessage({ creative: 1, tipo: 'selecionar', ativo: v }, '*'); } catch (e) {}
+}
+
+/* ---------- tela vazia: como conectar ---------- */
+function configs() {
+  const bin = S.saude.bin || '/caminho/para/creative-lovable-mcp/bin/creative-lovable-mcp.js';
+  const binJson = JSON.stringify(bin);
+  const url = (S.saude.url || location.origin) + '/mcp';
+  return {
+    'claude-desktop': { rotulo: 'Claude Desktop', codigo: '{\n  "mcpServers": {\n    "creative-lovable": {\n      "command": "node",\n      "args": [' + binJson + ']\n    }\n  }\n}', dica: 'No Claude Desktop: menu Claude › Settings… › Developer › Edit Config. Cole no claude_desktop_config.json, salve e feche o Claude por completo antes de abrir de novo.' },
+    'claude-code': { rotulo: 'Claude Code', codigo: 'claude mcp add --transport stdio --scope user creative-lovable -- node ' + JSON.stringify(bin), dica: 'Rode no terminal. Confira com claude mcp list e, dentro do Claude Code, com /mcp.' },
+    'cursor': { rotulo: 'Cursor', codigo: '{\n  "mcpServers": {\n    "creative-lovable": {\n      "command": "node",\n      "args": [' + binJson + ']\n    }\n  }\n}', dica: 'Cole em ~/.cursor/mcp.json (ou em Settings › MCP).' },
+    'vscode': { rotulo: 'VS Code', codigo: '{\n  "servers": {\n    "creative-lovable": {\n      "type": "stdio",\n      "command": "node",\n      "args": [' + binJson + ']\n    }\n  }\n}', dica: 'Cole em .vscode/mcp.json do seu workspace e use o modo agente do Copilot.' },
+    'http': { rotulo: 'Outros (HTTP)', codigo: 'node ' + bin + ' --http\n\nEndereço MCP: ' + url, dica: 'Para clientes que se conectam por URL. Para acesso de fora do computador, use --token e um túnel (ex.: cloudflared).' },
+  };
+}
+function renderVazio() {
+  S.atual = null; S.dados = null;
+  $('#toolbar').hidden = true; $('#device').hidden = true; $('#stageMsg').hidden = true; $('#vazio').hidden = false;
+  const c = configs();
+  $('#cfgTabs').innerHTML = Object.entries(c).map(([k, v]) => '<button data-cfg="' + k + '" aria-pressed="' + (k === S.cfg) + '">' + esc(v.rotulo) + '</button>').join('');
+  $('#cfgCode').textContent = c[S.cfg].codigo;
+  $('#cfgHint').textContent = c[S.cfg].dica;
+  const ideias = ['Crie no Creative Lovable uma landing page para uma pet shop, com serviços, preços e botão de WhatsApp.', 'Use o Creative Lovable para fazer um jogo de nave em canvas, com fases e placar.', 'No Creative Lovable, monte um app React de controle financeiro com gráfico mensal.'];
+  $('#ideias').innerHTML = ideias.map((t) => '<button class="ideia" data-copiar="' + esc(t) + '">' + svg('arrow') + '<span>' + esc(t) + '</span></button>').join('');
+  renderPainel();
+}
+
+/* ---------- eventos ao vivo ---------- */
+let recarregarT = 0;
+function agendarDetalhe() { clearTimeout(recarregarT); recarregarT = setTimeout(() => carregarDetalhe(false), 250); }
+function conectarEventos() {
+  const es = new EventSource('/api/eventos');
+  const st = $('#status');
+  es.addEventListener('ola', () => { st.classList.add('on'); st.querySelector('span').textContent = 'ao vivo'; });
+  es.onerror = () => { st.classList.remove('on'); st.querySelector('span').textContent = 'reconectando…'; };
+  const dados = (e) => { try { return JSON.parse(e.data); } catch (x) { return {}; } };
+  es.addEventListener('atividade', (e) => {
+    const a = dados(e); a._novo = true; S.atividade.push(a);
+    if (S.atividade.length > 300) S.atividade.shift();
+    const p = S.projetos.find((x) => x.slug === a.projeto);
+    if (!p && a.projeto) carregarProjetos();
+    if (S.aba === 'atividade') renderPainel();
+  });
+  es.addEventListener('projetos', () => carregarProjetos());
+  es.addEventListener('arquivos', (e) => { const a = dados(e); if (a.projeto === S.atual && (S.aba === 'arquivos')) agendarDetalhe(); });
+  es.addEventListener('versao', (e) => { if (dados(e).projeto === S.atual) agendarDetalhe(); carregarProjetos(); });
+  es.addEventListener('servidor', (e) => { if (dados(e).projeto === S.atual) agendarDetalhe(); carregarProjetos(); });
+  es.addEventListener('erro', (e) => {
+    const a = dados(e);
+    if (a.projeto === S.atual && S.dados) {
+      const ult = S.dados.erros[S.dados.erros.length - 1];
+      if (ult && ult.mensagem === a.erro.mensagem && ult.linha === a.erro.linha) ult.vezes++; else S.dados.erros.push(a.erro);
+      renderPainel();
+    }
+  });
+  es.addEventListener('erros-limpos', (e) => { if (dados(e).projeto === S.atual && S.dados) { S.dados.erros = []; renderPainel(); } });
+  es.addEventListener('selecao', (e) => { const a = dados(e); if (a.projeto === S.atual && S.dados) { S.dados.selecao = a.selecao; if (S.aba === 'atividade') renderPainel(); } });
+}
+
+/* ---------- ligações ---------- */
+function ligar() {
+  $('#logo').innerHTML = LOGO + 'Creative Lovable <small>painel local</small>';
+  $$('[data-i]').forEach((el) => el.insertAdjacentHTML('afterbegin', svg(el.dataset.i)));
+  $('#plist').addEventListener('click', (e) => { const b = e.target.closest('[data-slug]'); if (b) abrir(b.dataset.slug); });
+  $$('.ptabs button').forEach((b) => b.addEventListener('click', () => { S.aba = b.dataset.aba; S.arquivoAberto = null; if (S.aba !== 'atividade') carregarDetalhe(false); else renderPainel(); }));
+  $('#devices').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-device]'); if (!b) return;
+    S.device = b.dataset.device; $('#stage').dataset.device = S.device;
+    $$('#devices button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  });
+  $('#reload').addEventListener('click', () => { const f = $('#frame'); if (f.dataset.src) { f.src = 'about:blank'; setTimeout(() => { f.src = f.dataset.src; }, 30); } });
+  $('#copyUrl').addEventListener('click', () => { const t = $('#purl').textContent; if (/^https?:/.test(t)) copiar(t); });
+  $('#selBtn').addEventListener('click', () => ligarSelecao(!S.selecionando));
+  $('#frame').addEventListener('load', () => { if (S.selecionando) ligarSelecao(true); });
+  window.addEventListener('message', (e) => {
+    if (e.source !== $('#frame').contentWindow) return;
+    const d = e.data; if (!d || d.creative !== 1) return;
+    if (d.tipo === 'selecionado') { S.selecionando = false; renderSel(); if (S.dados) S.dados.selecao = Object.assign({ ts: Date.now() }, d.selecao); S.aba = 'atividade'; renderPainel(); toast('Elemento escolhido. Agora diga à sua IA o que mudar nele.'); }
+    if (d.tipo === 'selecao-cancelada') { S.selecionando = false; renderSel(); }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.selecionando) ligarSelecao(false); });
+  $('#pbody').addEventListener('click', async (e) => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.id === 'limparErros') { await api('/api/projetos/' + encodeURIComponent(S.atual) + '/erros/ler', { method: 'POST', body: JSON.stringify({ limpar: true }) }); S.dados.erros = []; renderPainel(); return; }
+    if (t.dataset.arq) { try { S.arquivoAberto = await api('/api/projetos/' + encodeURIComponent(S.atual) + '/arquivo?caminho=' + encodeURIComponent(t.dataset.arq)); renderPainel(); } catch (x) { toast(x.message); } return; }
+    if (t.id === 'voltarArq') { S.arquivoAberto = null; renderPainel(); return; }
+    if (t.dataset.confirmar) { S.confirmar = Number(t.dataset.confirmar); renderPainel(); return; }
+    if (t.hasAttribute('data-cancelar')) { S.confirmar = null; renderPainel(); return; }
+    if (t.dataset.restaurar) {
+      const n = Number(t.dataset.restaurar); S.confirmar = null;
+      try { const r = await api('/api/projetos/' + encodeURIComponent(S.atual) + '/restaurar', { method: 'POST', body: JSON.stringify({ versao: n }) }); toast('v' + n + ' restaurada como v' + r.nova + '.'); await carregarDetalhe(true); }
+      catch (x) { toast(x.message); }
+      return;
+    }
+    if (t.dataset.copiar) copiar(t.dataset.copiar);
+  });
+  $('#vazio').addEventListener('click', (e) => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.cfg) { S.cfg = t.dataset.cfg; renderVazio(); }
+    if (t.id === 'cfgCopy') copiar($('#cfgCode').textContent);
+    if (t.dataset.copiar) copiar(t.dataset.copiar);
+  });
+  window.addEventListener('hashchange', () => { const s = decodeURIComponent(location.hash.replace(/^#\/?/, '')); if (s && s !== S.atual) abrir(s); });
+}
+
+async function iniciar() {
+  ligar();
+  try { S.saude = await api('/api/saude'); } catch (e) { S.saude = {}; }
+  try { S.atividade = (await api('/api/atividade')).atividade || []; } catch (e) { S.atividade = []; }
+  conectarEventos();
+  await carregarProjetos();
+  const s = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
+  if (s) abrir(s);
+  setInterval(renderLista, 60000);
+}
+iniciar();
+})();
+</script>
+</body>
+</html>

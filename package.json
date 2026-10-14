@@ -1,0 +1,54 @@
+{
+  "name": "creative-lovable-mcp",
+  "version": "1.0.0",
+  "description": "Creative Lovable: laboratório de criação para IAs via MCP. Projetos, arquivos, preview ao vivo, erros, versões e exportação.",
+  "author": "Creative Zone",
+  "homepage": "https://github.com/Forum-CreativeZone/CreativeLovable#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Forum-CreativeZone/CreativeLovable.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Forum-CreativeZone/CreativeLovable/issues"
+  },
+  "type": "module",
+  "bin": {
+    "creative-lovable-mcp": "bin/creative-lovable-mcp.js"
+  },
+  "main": "src/servidor.js",
+  "files": [
+    "bin",
+    "src",
+    "painel",
+    "test",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "node bin/creative-lovable-mcp.js",
+    "http": "node bin/creative-lovable-mcp.js --http",
+    "test": "node test/e2e.mjs"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "builder",
+    "preview",
+    "claude"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "acorn": "^8.19.0",
+    "acorn-jsx": "^5.3.2",
+    "cross-spawn": "^7.0.6",
+    "jszip": "^3.10.2",
+    "zod": "^4.6.7"
+  },
+  "optionalDependencies": {
+    "playwright-core": "^1.48.2"
+  }
+}
