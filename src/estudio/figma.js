@@ -68,12 +68,12 @@ async function colecao(nome, existentes) {
   return existentes.find((c) => c.name === nome) || figma.variables.createVariableCollection(nome);
 }
 
+const TOCADAS = new Set();
 async function variavel(nome, col, tipo, todas) {
-  const achada = todas.find((v) => v.name === nome && v.variableCollectionId === col.id);
-  if (achada) return achada;
-  const nova = figma.variables.createVariable(nome, col, tipo);
-  todas.push(nova);
-  return nova;
+  let v = todas.find((x) => x.name === nome && x.variableCollectionId === col.id);
+  if (!v) { v = figma.variables.createVariable(nome, col, tipo); todas.push(v); }
+  TOCADAS.add(v.id);
+  return v;
 }
 
 async function fonteDisponivel(familia, peso, disponiveis) {
@@ -101,20 +101,17 @@ async function principal() {
       const v = await variavel(grupo + '/' + passo, prim, 'COLOR', todas);
       v.setValueForMode(modoPrim, rgb(hex));
       porHex[hex.toLowerCase()] = porHex[hex.toLowerCase()] || v;
-      resumo.variaveis++;
     }
   }
   for (const [nome, valor] of Object.entries(DADOS.espacos)) {
     const v = await variavel('espaco/' + nome, prim, 'FLOAT', todas);
     v.setValueForMode(modoPrim, valor);
     v.scopes = ['GAP', 'WIDTH_HEIGHT'];
-    resumo.variaveis++;
   }
   for (const [nome, valor] of Object.entries(DADOS.raios)) {
     const v = await variavel('raio/' + nome, prim, 'FLOAT', todas);
     v.setValueForMode(modoPrim, valor);
     v.scopes = ['CORNER_RADIUS'];
-    resumo.variaveis++;
   }
 
   // 2. Tema: cores semânticas com modos Claro e Escuro (ou duas coleções, se o plano não permitir modos).
@@ -142,7 +139,6 @@ async function principal() {
       const base = porHex[hex.toLowerCase()];
       v.setValueForMode(id, base ? figma.variables.createVariableAlias(base) : rgb(hex));
       v.scopes = escopo(nome);
-      resumo.variaveis++;
     }
   }
 
@@ -234,6 +230,7 @@ async function principal() {
   }
   for (const e of DADOS.estilosTexto) quadro.appendChild(await texto(e.nome + ' · ' + e.familia + ' ' + e.tamanho + 'px', e.nome));
   figma.viewport.scrollAndZoomIntoView([quadro]);
+  resumo.variaveis = TOCADAS.size;
   return resumo;
 }
 
