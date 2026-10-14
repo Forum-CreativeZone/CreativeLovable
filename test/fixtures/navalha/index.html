@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Navalha e Café · barbearia na Ribeira, Natal</title>
+<meta name="description" content="Corte na tesoura, barba com toalha quente e café coado na hora. Agende seu horário na Navalha e Café, Rua Chile 112, Ribeira.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif:wght@400&family=Hanken+Grotesk:wght@400;600&family=JetBrains+Mono&display=swap">
+<link rel="stylesheet" href="design-system/tokens.css">
+<link rel="stylesheet" href="design-system/base.css">
+<link rel="stylesheet" href="design-system/componentes.css">
+<link rel="stylesheet" href="css/estilo.css">
+<script src="design-system/componentes.js" defer></script>
+<script src="js/agenda.js" defer></script>
+</head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header class="topo">
+  <div class="topo__interno">
+    <a class="topo__marca" href="index.html">Navalha e Café</a>
+    <button class="topo__menu botao botao--fantasma" type="button" aria-expanded="false" aria-controls="menu-principal">Menu</button>
+    <nav class="topo__nav" id="menu-principal" aria-label="Principal">
+      <ul>
+        <li><a href="#servicos">Serviços e preços</a></li>
+        <li><a href="#agenda">Agendar</a></li>
+        <li><a href="#onde">Onde fica</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="conteudo">
+  <section class="abertura conteiner" aria-labelledby="titulo">
+    <div class="abertura__texto pilha">
+      <h1 id="titulo">Corte na tesoura, café coado na hora.</h1>
+      <p class="destaque medida">Barbearia na Ribeira, a duas quadras do seu trabalho. Marque pelo site em menos de um minuto: Rafael e Joca atendem de terça a sábado, das 9h às 19h.</p>
+      <div class="agrupar">
+        <a class="botao botao--grande" href="#agenda">Agendar meu horário</a>
+        <a class="botao botao--secundario botao--grande" href="#servicos">Ver serviços e preços</a>
+      </div>
+    </div>
+    <aside class="bilhetes" aria-labelledby="titulo-bilhetes">
+      <h2 id="titulo-bilhetes" class="bilhetes__titulo">Próximos horários livres</h2>
+      <ol class="bilhetes__lista">
+        <li class="bilhete"><span class="bilhete__hora">10:40</span><span class="bilhete__info">Hoje · com Rafael</span></li>
+        <li class="bilhete"><span class="bilhete__hora">14:00</span><span class="bilhete__info">Hoje · com Joca</span></li>
+        <li class="bilhete"><span class="bilhete__hora">09:00</span><span class="bilhete__info">Amanhã · com Rafael</span></li>
+      </ol>
+    </aside>
+  </section>
+
+  <section id="servicos" class="secao" aria-labelledby="titulo-servicos">
+    <div class="conteiner servicos">
+      <div class="servicos__cabeca pilha">
+        <h2 id="titulo-servicos">Serviços e preços</h2>
+        <p class="texto-suave medida">Preço fechado, sem surpresa no caixa. O café é por conta da casa.</p>
+      </div>
+      <ul class="servicos__lista">
+        <li class="servico"><span class="servico__nome">Corte na tesoura</span><span class="servico__tempo">40 min</span><span class="servico__preco">R$ 45</span></li>
+        <li class="servico"><span class="servico__nome">Barba com toalha quente</span><span class="servico__tempo">30 min</span><span class="servico__preco">R$ 35</span></li>
+        <li class="servico servico--destaque"><span class="servico__nome">Corte e barba</span><span class="servico__tempo">70 min</span><span class="servico__preco">R$ 70</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="agenda" class="secao agenda" aria-labelledby="titulo-agenda">
+    <div class="conteiner agenda__grade">
+      <div class="pilha">
+        <h2 id="titulo-agenda">Agende em três passos</h2>
+        <ol class="passos">
+          <li>Escolha o serviço.</li>
+          <li>Escolha o dia e o horário.</li>
+          <li>Deixe seu nome e WhatsApp para a confirmação.</li>
+        </ol>
+      </div>
+      <form class="cartao agenda__form" id="formAgenda" novalidate>
+        <div class="campo">
+          <label class="campo__rotulo" for="servico">Serviço</label>
+          <select class="campo__entrada" id="servico" name="servico" required>
+            <option value="corte">Corte na tesoura · R$ 45</option>
+            <option value="barba">Barba com toalha quente · R$ 35</option>
+            <option value="combo">Corte e barba · R$ 70</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label class="campo__rotulo" for="dia">Dia</label>
+          <input class="campo__entrada" id="dia" name="dia" type="date" required>
+        </div>
+        <div class="campo">
+          <label class="campo__rotulo" for="nome">Seu nome</label>
+          <input class="campo__entrada" id="nome" name="nome" autocomplete="name" required aria-describedby="nome-erro">
+          <p class="campo__erro" id="nome-erro" hidden>Diga seu nome para a gente te chamar.</p>
+        </div>
+        <div class="campo">
+          <label class="campo__rotulo" for="fone">WhatsApp</label>
+          <input class="campo__entrada" id="fone" name="fone" type="tel" inputmode="tel" autocomplete="tel" required aria-describedby="fone-ajuda">
+          <p class="campo__ajuda" id="fone-ajuda">Com DDD. A confirmação chega por lá.</p>
+        </div>
+        <button class="botao botao--grande" type="submit">Confirmar agendamento</button>
+        <p class="agenda__ok" id="agendaOk" role="status" hidden></p>
+      </form>
+    </div>
+  </section>
+
+  <section id="onde" class="secao" aria-labelledby="titulo-onde">
+    <div class="conteiner onde">
+      <div class="pilha">
+        <h2 id="titulo-onde">Onde fica</h2>
+        <p class="destaque">Rua Chile, 112, Ribeira, Natal.<br>Em frente à praça, porta azul.</p>
+        <a class="botao botao--secundario" href="https://wa.me/5584999990000">Falar no WhatsApp: (84) 99999-0000</a>
+      </div>
+      <div class="tabela-rolagem" role="region" aria-label="Horário de funcionamento" tabindex="0">
+        <table class="tabela">
+          <caption>Horário de funcionamento</caption>
+          <tbody>
+            <tr><th scope="row">Terça a sexta</th><td class="num">9h às 19h</td></tr>
+            <tr><th scope="row">Sábado</th><td class="num">9h às 17h</td></tr>
+            <tr><th scope="row">Domingo e segunda</th><td class="num">Fechado</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="rodape">
+  <div class="conteiner rodape__interno">
+    <p><strong>Navalha e Café</strong> · Rua Chile, 112, Ribeira, Natal</p>
+    <p class="texto-suave">Terça a sábado. Café coado na hora para quem espera.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Barbearia</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap">
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+  .titulo { background: linear-gradient(90deg, #a78bfa, #60a5fa); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .card { border-left: 4px solid #8b5cf6; border-radius: 16px; transition: all .3s; }
+  .flutua { animation: flutuar 3s infinite; }
+  @keyframes flutuar { 50% { transform: translateY(-8px); } }
+</style>
+</head>
+<body class="bg-gray-50">
+<section class="hero text-center text-white py-24">
+  <h1 class="titulo text-5xl font-bold">Bem-vindo à Barbearia do Futuro</h1>
+  <p class="mt-4 text-xl">Soluções inovadoras para levar o seu estilo ao próximo nível.</p>
+  <a href="#" class="inline-block mt-8 px-8 py-4 rounded-2xl shadow-xl bg-white text-purple-600">Saiba mais</a>
+</section>
+<section class="grid grid-cols-3 gap-8 p-16">
+  <div class="card bg-white p-8 rounded-2xl shadow-xl"><div>✂️</div><h3>Corte</h3><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p><a href="#">Saiba mais</a></div>
+  <div class="card bg-white p-8 rounded-2xl shadow-xl"><div>🧔</div><h3>Barba</h3><p>Experiência única com qualidade e excelência.</p></div>
+  <div class="card bg-white p-8 rounded-2xl shadow-xl flutua"><div>⭐</div><h3>+10.000 clientes satisfeitos</h3><p>98% de aprovação.</p></div>
+</section>
+<section class="p-16 text-center"><img src="https://via.placeholder.com/600x400"><input placeholder="Seu e-mail"><button></button></section>
+</body>
+</html>

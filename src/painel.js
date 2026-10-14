@@ -58,10 +58,11 @@ function sondar(porta) {
 }
 
 export class Painel {
-  constructor({ config, workspace, processos }) {
+  constructor({ config, workspace, processos, estudio }) {
     this.config = config;
     this.workspace = workspace;
     this.processos = processos;
+    this.estudio = estudio;
     this.erros = new Map();
     this.selecoes = new Map();
     this.atividade = [];
@@ -281,10 +282,16 @@ export class Painel {
     if (rota === '/api/atividade') return json(res, 200, { atividade: this.atividade.slice(-120) });
     if (rota === '/api/projetos' && m === 'GET') {
       const lista = await this.workspace.listar();
-      return json(res, 200, {
-        dir: this.config.dir, versao: VERSAO, mcp: !!this.fabricaMcp,
-        projetos: lista.map((p) => ({ ...p, servidor: this.processos.info(p.slug), erros: (this.erros.get(p.slug) || []).length })),
-      });
+      const projetos = [];
+      for (const p of lista) {
+        let fase = null;
+        if (p.estudio && this.estudio) {
+          const s = await this.estudio.situacao(p.slug).catch(() => null);
+          if (s) fase = s.etapas.every((e) => e.feita) ? 'entregue' : s.faseAtual + (s.etapas.find((e) => e.fase === s.faseAtual)?.estado === 'aguardando-aprovacao' ? ':aguardando' : '');
+        }
+        projetos.push({ ...p, fase, servidor: this.processos.info(p.slug), erros: (this.erros.get(p.slug) || []).length });
+      }
+      return json(res, 200, { dir: this.config.dir, versao: VERSAO, mcp: !!this.fabricaMcp, projetos });
     }
     const pm = rota.match(/^\/api\/projetos\/([^/]+)(\/.*)?$/);
     if (!pm) return json(res, 404, { erro: 'Rota desconhecida.' });
@@ -327,6 +334,7 @@ export class Painel {
       const { limpar } = await lerCorpo(req);
       return json(res, 200, { erros: await this.lerErros(slug, { limpar: !!limpar }) });
     }
+    if (sub.startsWith('/estudio') && this.estudio) return this.tratarEstudio(req, res, slug, sub, url);
     if (sub === '/selecao' && m === 'GET') return json(res, 200, { selecao: this.selecoes.get(slug) || null });
     if (sub === '/selecao' && m === 'POST') {
       this.exigirCabecalho(req);
@@ -338,6 +346,55 @@ export class Painel {
       this.selecoes.set(slug, sel);
       this.emitir({ tipo: 'selecao', projeto: slug, selecao: sel });
       return json(res, 200, { ok: true });
+    }
+    return json(res, 404, { erro: 'Rota desconhecida.' });
+  }
+
+  /** Rotas do estúdio: situação, aprovações, pedidos de ajuste, configurações e capturas da auditoria. */
+  async tratarEstudio(req, res, slug, sub, url) {
+    const m = req.method;
+    const e = this.estudio;
+    if (sub === '/estudio' && m === 'GET') {
+      const s = await e.situacao(slug);
+      const auditorias = await e.listarAuditorias(slug);
+      const historico = auditorias.map((a) => ({ n: a.n, nota: a.nota, aprovada: a.aprovada, em: a.em }));
+      return json(res, 200, { ...s, historico });
+    }
+    if (sub === '/estudio/captura' && m === 'GET') {
+      const n = String(url.searchParams.get('n') || '');
+      const nome = String(url.searchParams.get('nome') || '');
+      if (!/^\d{1,6}$/.test(n) || !/^[a-z-]{3,30}\.jpg$/.test(nome)) return json(res, 400, { erro: 'Captura inválida.' });
+      const arq = path.join(e.dirCapturas(slug, Number(n)), nome);
+      if (!fss.existsSync(arq)) return json(res, 404, { erro: 'Captura não encontrada.' });
+      res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Cache-Control': 'no-store' });
+      return fss.createReadStream(arq).pipe(res);
+    }
+    if (m !== 'POST') return json(res, 404, { erro: 'Rota desconhecida.' });
+    this.exigirCabecalho(req);
+    const corpo = await lerCorpo(req, 64 * 1024);
+    const ok = async (texto) => {
+      this.emitir({ tipo: 'atividade', projeto: slug, texto });
+      this.emitir({ tipo: 'estudio', projeto: slug });
+      return json(res, 200, { ok: true, situacao: await e.situacao(slug) });
+    };
+    try {
+      if (sub === '/estudio/aprovar') {
+        const etapa = String(corpo.etapa || '');
+        const r = await e.aprovar(slug, etapa, { id: corpo.id ? String(corpo.id) : undefined, por: 'painel' });
+        return ok(`Você aprovou pelo painel: ${etapa === 'direcao' ? 'direção "' + r.nome + '"' : etapa}`);
+      }
+      if (sub === '/estudio/ajuste') {
+        const texto = String(corpo.texto || '').trim();
+        if (texto.length < 3) return json(res, 400, { erro: 'Escreva o que você quer mudar.' });
+        await e.registrarFeedback(slug, String(corpo.etapa || 'direcao'), texto);
+        return ok(`Você pediu um ajuste: "${texto.slice(0, 80)}"`);
+      }
+      if (sub === '/estudio/config') {
+        const c = await e.salvarConfig(slug, corpo);
+        return ok(`Configurações do projeto mudaram: modo ${c.modo}, aprovação ${c.aprovacao}, nota mínima ${c.notaMinima}, comandos ${c.permissoes.comandos ? 'sim' : 'não'}, internet ${c.permissoes.rede ? 'sim' : 'não'}, apagar ${c.permissoes.apagar ? 'sim' : 'não'}`);
+      }
+    } catch (x) {
+      return json(res, 400, { erro: x.message });
     }
     return json(res, 404, { erro: 'Rota desconhecida.' });
   }

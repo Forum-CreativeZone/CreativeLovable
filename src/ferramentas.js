@@ -5,20 +5,24 @@ import { VERSAO, ErroCreative, log } from './config.js';
 import { MODELOS } from './modelos.js';
 import { verificarProjeto } from './verificar.js';
 import { capturarTela, INSTRUCOES_CAPTURA } from './captura.js';
+import { registrarEstudio } from './ferramentas-estudio.js';
+import { NOME_FASE } from './estudio/estado.js';
+import { PRINCIPIOS } from './estudio/principios.js';
 
-export const INSTRUCOES = `O Creative Lovable é um laboratório de criação. Você escreve o código; o Creative Lovable guarda os projetos no computador do usuário, mostra o resultado ao vivo no painel dele e devolve os erros para você corrigir.
+export const INSTRUCOES = `O Creative Lovable é um laboratório e estúdio de criação. Você é o motor: escreve o código. O Creative Lovable conduz o processo, guarda os projetos no computador do usuário, mostra tudo ao vivo no painel dele, devolve erros e audita a qualidade.
 
-Fluxo recomendado:
-1. cl_criar_projeto com o modelo certo: html (página única), web (site com vários arquivos), jogo (jogo 2D em canvas), react (app React com Vite), api (backend Node) ou vazio (qualquer outro software).
-2. Escreva os arquivos com cl_escrever. Para mudar algo que já existe, prefira cl_editar com trechos curtos e únicos; leia antes com cl_ler.
-3. Depois de cada rodada de mudanças rode cl_verificar e corrija o que aparecer.
-4. Passe ao usuário o link do painel (cl_preview). O preview recarrega sozinho a cada mudança.
-5. Se cl_capturar_tela estiver disponível, use para conferir o visual e os erros no navegador.
-6. Salve marcos com cl_salvar_versao (mensagem curta). Se algo quebrar, use cl_restaurar.
-7. Quando o usuário falar de "este elemento" ou "o que eu selecionei", leia cl_selecao.
-8. Projetos react e api rodam com cl_iniciar_servidor (instala dependências na primeira vez).
+Projetos no modo estúdio (o padrão para sites, landing pages, apps e jogos) seguem etapas com portões:
+1. cl_criar_projeto, depois cl_briefing com público, objetivo, tom e conteúdo real. Se faltar algo, pergunte ao usuário; nunca invente dados.
+2. cl_catalogo (tipo "direcoes") e cl_propor_direcoes com 2 ou 3 direções de arte bem diferentes. O usuário escolhe (no painel ou na conversa; registre com cl_aprovar e as palavras dele).
+3. cl_gerar_design_system: tokens, temas, componentes e DESIGN.md em design-system/.
+4. cl_catalogo (tipo "estruturas") e cl_arquitetura com páginas, seções com propósito, fluxos e estados. O usuário aprova.
+5. Só então o código das páginas pode ser escrito (cl_escrever/cl_editar). Use somente os tokens de design-system/tokens.css e os componentes de cl_componente.
+6. cl_auditar (nota 0-100 com capturas), cl_criticar e cl_refinar até passar na nota mínima sem problemas críticos. O usuário aprova a entrega; aí cl_exportar e cl_exportar_figma liberam.
+Consulte cl_status sempre que retomar um projeto: ele diz a etapa, os pedidos de ajuste do usuário e o próximo passo. Leia o recurso creative-lovable://principios (manual do estúdio).
 
-Padrão de qualidade: visual profissional e responsivo, textos reais no idioma do usuário, tudo funcionando de verdade, sem lorem ipsum. Arquivos pequenos e organizados são mais fáceis de editar do que um arquivo gigante.`;
+No modo livre (projetos api, vazio ou quando o usuário pede explicitamente para pular o processo), não há portões: crie, escreva, rode cl_verificar e corrija.
+
+Em qualquer modo: cl_verificar depois de cada rodada de mudanças; cl_editar com trechos curtos e únicos (leia antes com cl_ler); cl_capturar_tela para ver o resultado; cl_salvar_versao nos marcos; cl_selecao quando o usuário falar do elemento que escolheu; cl_iniciar_servidor para react e api; mande o link do painel (cl_preview). Textos reais no idioma do usuário, nada de lorem ipsum, tudo funcionando de verdade. Permissões (comandos, internet, apagar) e aprovações são do usuário: respeite as recusas.`;
 
 const texto = (t) => ({ content: [{ type: 'text', text: t }] });
 const falha = (t) => ({ content: [{ type: 'text', text: t }], isError: true });
@@ -28,7 +32,7 @@ const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
 const PROJETO = z.string().min(1).describe('Identificador do projeto (slug) ou nome, como aparece em cl_projetos.');
 const CAMINHO = z.string().min(1).describe('Caminho relativo à raiz do projeto, ex.: index.html, css/estilo.css, src/App.jsx.');
 
-export function criarServidorMcp({ workspace, processos, painel, config }) {
+export function criarServidorMcp({ workspace, processos, painel, config, estudio }) {
   const servidor = new McpServer(
     { name: 'creative-lovable', title: 'Creative Lovable', version: VERSAO },
     { instructions: INSTRUCOES },
@@ -47,6 +51,16 @@ export function criarServidorMcp({ workspace, processos, painel, config }) {
         return falha(`Erro interno do Creative Lovable em ${nome}: ${e?.message || e}`);
       }
     });
+  };
+
+  /** Aviso (não bloqueia) quando uma página nova não está na arquitetura aprovada. */
+  const foraDaArquitetura = async (slug, rel) => {
+    if (!/\.html?$/i.test(rel) || /^(design-system|docs)\//.test(rel)) return '';
+    const c = await estudio.config(slug);
+    if (c.modo !== 'estudio') return '';
+    const a = await estudio.ler(slug, 'arquitetura.json');
+    if (!a?.paginas?.length || a.paginas.some((p) => p.caminho === rel)) return '';
+    return `\nAtenção: ${rel} não está na arquitetura aprovada (${a.paginas.map((p) => p.caminho).join(', ')}). Se for uma página nova, atualize com cl_arquitetura e peça aprovação.`;
   };
 
   const linkPreview = async (meta) => {
@@ -69,7 +83,9 @@ export function criarServidorMcp({ workspace, processos, painel, config }) {
     for (const p of lista) {
       const versoes = await workspace.versoes(p.slug);
       const link = await linkPreview(p);
-      linhas.push(`- ${p.slug} · "${p.nome}" · modelo ${p.modelo} · v${versoes.length ? versoes[versoes.length - 1].n : 0} · atualizado ${p.atualizadoEm}` + (link ? ` · ${link}` : ''));
+      const sit = p.estudio ? await estudio.situacao(p.slug).catch(() => null) : null;
+      const etapa = sit ? ` · estúdio: ${sit.etapas.every((e) => e.feita) ? 'entregue' : NOME_FASE[sit.faseAtual]}` : ' · modo livre';
+      linhas.push(`- ${p.slug} · "${p.nome}" · modelo ${p.modelo}${etapa} · v${versoes.length ? versoes[versoes.length - 1].n : 0} · atualizado ${p.atualizadoEm}` + (link ? ` · ${link}` : ''));
     }
     return texto(`${plural(lista.length, 'projeto', 'projetos')} em ${workspace.dir}:\n${linhas.join('\n')}` + (painel.disponivel ? `\n\nPainel: ${painel.url}` : ''));
   });
@@ -82,20 +98,26 @@ export function criarServidorMcp({ workspace, processos, painel, config }) {
       nome: z.string().min(1).max(80).describe('Nome do projeto, ex.: "Agenda da Barbearia".'),
       modelo: z.enum(Object.keys(MODELOS)).default('html').describe('Modelo inicial.'),
       descricao: z.string().max(600).optional().describe('Resumo do que o usuário pediu, para referência futura.'),
+      modo: z.enum(['estudio', 'livre']).optional().describe('estudio (padrão para html, web, react e jogo): briefing, direção de arte, design system, arquitetura e auditoria com portões. livre (padrão para api e vazio): sem portões. Use "livre" em projetos visuais só se o usuário pedir explicitamente.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
-  }, async ({ nome, modelo = 'html', descricao }) => {
+  }, async ({ nome, modelo = 'html', descricao, modo }) => {
+    const padrao = process.env.CL_MODO_PADRAO === 'livre' || ['api', 'vazio'].includes(modelo) ? 'livre' : 'estudio';
+    const modoFinal = modo || padrao;
     const { meta, arquivos } = await workspace.criar({ nome, modelo, descricao });
-    avisar(meta.slug, `Projeto "${meta.nome}" criado (modelo ${modelo})`);
+    if (modoFinal === 'estudio') await estudio.salvarConfig(meta.slug, { modo: 'estudio' });
+    avisar(meta.slug, `Projeto "${meta.nome}" criado (modelo ${modelo}, modo ${modoFinal === 'estudio' ? 'estúdio' : 'livre'})`);
     painel.notificar({ tipo: 'projetos' });
     const dev = MODELOS[modelo].servidor === 'dev';
     const link = painel.urlPainel(meta.slug);
     return texto([
-      `Projeto criado: ${meta.slug} (modelo ${modelo}) em ${workspace.raiz(meta.slug)}`,
+      `Projeto criado: ${meta.slug} (modelo ${modelo}, modo ${modoFinal === 'estudio' ? 'estúdio' : 'livre'}) em ${workspace.raiz(meta.slug)}`,
       `Arquivos iniciais: ${arquivos.join(', ')}`,
       dev ? 'Para ver rodando, use cl_iniciar_servidor (instala as dependências na primeira vez).' : `Preview: ${painel.urlPreview(meta.slug) || 'painel indisponível'}`,
       link ? `Painel do projeto: ${link}` : '',
-      'Próximo passo: escreva os arquivos do app com cl_escrever e rode cl_verificar.',
+      modoFinal === 'estudio'
+        ? 'Próximo passo: registre o briefing com cl_briefing (pergunte ao usuário o que faltar). O código das páginas só libera depois de direção de arte, design system e arquitetura aprovados.'
+        : 'Próximo passo: escreva os arquivos do app com cl_escrever e rode cl_verificar.',
     ].filter(Boolean).join('\n'));
   });
 
@@ -136,10 +158,13 @@ export function criarServidorMcp({ workspace, processos, painel, config }) {
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, async ({ projeto, caminho, conteudo }) => {
     const meta = await workspace.projeto(projeto);
+    const { rel } = workspace.resolver(meta.slug, caminho);
+    await estudio.podeEscrever(meta.slug, rel);
     const r = await workspace.escrever(meta.slug, caminho, conteudo);
     avisar(meta.slug, `${r.existia ? 'Atualizou' : 'Criou'} ${r.rel} (${plural(r.linhas, 'linha', 'linhas')})`, { arquivo: r.rel });
     mudouArquivos(meta.slug);
-    return texto(`${r.existia ? 'Atualizado' : 'Criado'}: ${r.rel} (${plural(r.linhas, 'linha', 'linhas')}, ${kb(r.bytes)}).`);
+    const fora = await foraDaArquitetura(meta.slug, r.rel);
+    return texto(`${r.existia ? 'Atualizado' : 'Criado'}: ${r.rel} (${plural(r.linhas, 'linha', 'linhas')}, ${kb(r.bytes)}).` + fora);
   });
 
   ferramenta('cl_editar', {
@@ -156,6 +181,7 @@ export function criarServidorMcp({ workspace, processos, painel, config }) {
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   }, async ({ projeto, caminho, edicoes }) => {
     const meta = await workspace.projeto(projeto);
+    await estudio.podeEscrever(meta.slug, workspace.resolver(meta.slug, caminho).rel);
     const r = await workspace.editar(meta.slug, caminho, edicoes);
     avisar(meta.slug, `Editou ${r.rel} (${plural(r.resultados.length, 'trecho', 'trechos')})`, { arquivo: r.rel });
     mudouArquivos(meta.slug);
@@ -170,6 +196,7 @@ export function criarServidorMcp({ workspace, processos, painel, config }) {
     annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
   }, async ({ projeto, caminho }) => {
     const meta = await workspace.projeto(projeto);
+    await estudio.podeApagar(meta.slug);
     const r = await workspace.apagar(meta.slug, caminho);
     avisar(meta.slug, `Apagou ${r.rel}`);
     mudouArquivos(meta.slug);
@@ -183,6 +210,8 @@ export function criarServidorMcp({ workspace, processos, painel, config }) {
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   }, async ({ projeto, de, para }) => {
     const meta = await workspace.projeto(projeto);
+    await estudio.podeEscrever(meta.slug, workspace.resolver(meta.slug, de).rel);
+    await estudio.podeEscrever(meta.slug, workspace.resolver(meta.slug, para).rel);
     const r = await workspace.mover(meta.slug, de, para);
     avisar(meta.slug, `Moveu ${r.de} para ${r.para}`);
     mudouArquivos(meta.slug);
@@ -360,6 +389,7 @@ export function criarServidorMcp({ workspace, processos, painel, config }) {
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   }, async ({ projeto, comando, tempo_limite_s }) => {
     const meta = await workspace.projeto(projeto);
+    await estudio.podeExecutar(meta.slug, comando);
     const r = await processos.executar(meta.slug, workspace.raiz(meta.slug), comando, tempo_limite_s);
     avisar(meta.slug, `Comando "${comando}" terminou com código ${r.codigo}`);
     mudouArquivos(meta.slug);
@@ -378,8 +408,10 @@ export function criarServidorMcp({ workspace, processos, painel, config }) {
     const raiz = workspace.raiz(meta.slug);
     const cmd = comando || processos.comandoPadrao(raiz);
     if (!cmd) return falha('Não achei script "dev" nem "start" no package.json. Informe o comando.');
+    await estudio.podeExecutar(meta.slug, cmd);
     const partes = [];
     if (processos.precisaInstalar(raiz)) {
+      await estudio.podeExecutar(meta.slug, 'npm install');
       avisar(meta.slug, 'Instalando dependências (npm install)…');
       const inst = await processos.executar(meta.slug, raiz, 'npm install', 600);
       partes.push(`npm install terminou com código ${inst.codigo} em ${(inst.duracaoMs / 1000).toFixed(0)} s.`);
@@ -416,6 +448,7 @@ export function criarServidorMcp({ workspace, processos, painel, config }) {
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   }, async ({ projeto }) => {
     const meta = await workspace.projeto(projeto);
+    await estudio.podeExportar(meta.slug);
     const r = await workspace.exportarZip(meta.slug);
     avisar(meta.slug, `Exportou ${path.basename(r.arquivo)}`);
     return texto(`Zip criado: ${r.arquivo} (${plural(r.arquivos, 'arquivo', 'arquivos')}, ${kb(r.bytes)}).`);
@@ -436,10 +469,18 @@ export function criarServidorMcp({ workspace, processos, painel, config }) {
         type: 'text',
         text: `Use o Creative Lovable para criar: ${descricao}\n\n` +
           (modelo ? `Use o modelo "${modelo}".\n` : 'Escolha o modelo mais adequado.\n') +
-          'Crie o projeto, escreva os arquivos completos, rode cl_verificar e corrija tudo que aparecer, salve a primeira versão e me mande o link do painel. Capriche no visual e faça tudo funcionar de verdade.',
+          'Crie o projeto e siga o processo do estúdio do Creative Lovable (cl_status diz o próximo passo): briefing comigo, direções de arte para eu escolher, design system, arquitetura, construção e auditoria até passar. Me mande o link do painel. Nada genérico: quero um trabalho com cara de estúdio profissional.',
       },
     }],
   }));
+
+  registrarEstudio({ servidor, ferramenta, workspace, painel, processos, estudio, texto, falha, avisar, mudouArquivos });
+
+  servidor.registerResource('principios', 'creative-lovable://principios', {
+    title: 'Manual do estúdio',
+    description: 'Como o Creative Lovable espera que o design seja pensado: direção, sistema, composição, o que denuncia site feito por IA e o ciclo de auditoria.',
+    mimeType: 'text/markdown',
+  }, async (uri) => ({ contents: [{ uri: uri.href, mimeType: 'text/markdown', text: PRINCIPIOS }] }));
 
   servidor.registerResource('guia', 'creative-lovable://guia', {
     title: 'Guia do Creative Lovable',

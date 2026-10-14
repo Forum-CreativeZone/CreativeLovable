@@ -3,7 +3,7 @@ import { ErroCreative } from './config.js';
 
 let modulo;
 
-async function carregar() {
+export async function carregar() {
   if (modulo !== undefined) return modulo;
   for (const nome of ['playwright', 'playwright-core']) {
     try { modulo = await import(nome); return modulo; } catch { /* tenta o próximo */ }
@@ -12,7 +12,7 @@ async function carregar() {
   return modulo;
 }
 
-async function abrirNavegador(pw) {
+export async function abrirNavegador(pw) {
   const chromium = pw.chromium || pw.default?.chromium;
   const args = [];
   if (typeof process.getuid === 'function' && process.getuid() === 0) args.push('--no-sandbox');

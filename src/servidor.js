@@ -4,6 +4,7 @@ import { Workspace } from './workspace.js';
 import { Processos } from './processos.js';
 import { Painel } from './painel.js';
 import { criarServidorMcp } from './ferramentas.js';
+import { Estudio } from './estudio/estado.js';
 
 /** Monta as peças do Creative Lovable sem iniciar transporte nenhum (útil para testes e para embutir). */
 export async function montarCreative(config) {
@@ -11,9 +12,10 @@ export async function montarCreative(config) {
   await workspace.garantir();
   let painel;
   const processos = new Processos(config, (ev) => painel?.notificar(ev));
-  painel = new Painel({ config, workspace, processos });
-  const fabricaMcp = () => criarServidorMcp({ workspace, processos, painel, config });
-  return { config, workspace, processos, painel, fabricaMcp };
+  const estudio = new Estudio(workspace);
+  painel = new Painel({ config, workspace, processos, estudio });
+  const fabricaMcp = () => criarServidorMcp({ workspace, processos, painel, config, estudio });
+  return { config, workspace, processos, painel, estudio, fabricaMcp };
 }
 
 export async function iniciar(argv = process.argv.slice(2)) {
